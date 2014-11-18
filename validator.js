@@ -15,19 +15,20 @@ var validator = (function($){
     /* general text messages
     */
     message = {
-        invalid         : 'invalid input',
-        empty           : 'please put something here',
-        min             : 'input is too short',
-        max             : 'input is too long',
-        number_min      : 'too low',
-        number_max      : 'too high',
-        url             : 'invalid URL',
-        number          : 'not a number',
-        email           : 'email address is invalid',
-        email_repeat    : 'emails do not match',
-        password_repeat : 'passwords do not match',
-        repeat          : 'no match',
-        complete        : 'input is not complete',
+        invalid         : 'Invalid input',
+        empty           : 'Please put something here',
+        maxWords        : 'Maximum {0} words',
+        min             : 'Input is too short',
+        max             : 'Input is too long',
+        number_min      : 'Too low',
+        number_max      : 'Too high',
+        url             : 'Invalid URL',
+        number          : 'Not a number',
+        email           : 'Email address is invalid',
+        email_repeat    : 'Emails do not match',
+        password_repeat : 'Passwords do not match',
+        repeat          : 'No match',
+        complete        : 'Input is not complete',
         select          : 'Please select an option'
     };
 
@@ -58,6 +59,18 @@ var validator = (function($){
                 return false;
             }
             return true;
+        },
+        maxWords : function(a){
+          var words = a.split(" ").filter(function(word) {
+            word = word.replace(/\s/,'');
+            return word.length
+          }).length;
+
+          if( words > maxWords ){
+            alertTxt = message.maxWords.replace('{0}',maxWords);
+            return false;
+          }
+          return true;
         },
         // 'linked' is a special test case for inputs which their values should be equal to each other (ex. confirm email or retype password)
         linked : function(a,b){
@@ -322,6 +335,7 @@ var validator = (function($){
         /* Gather Custom data attributes for specific validation:
         */
         validateWords   = data['validateWords'] || 0;
+        maxWords        = data['validateMaxWords'] || 0;
         lengthRange     = data['validateLengthRange'] ? (data['validateLengthRange']+'').split(',') : [1];
         lengthLimit     = data['validateLength'] ? (data['validateLength']+'').split(',') : false;
         minmax          = data['validateMinmax'] ? (data['validateMinmax']+'').split(',') : ''; // for type 'number', defines the minimum and/or maximum for the value as a number.
@@ -345,6 +359,11 @@ var validator = (function($){
                 var linkedTo = data['validateLinked'].indexOf('#') == 0 ? $(data['validateLinked']) : $(':input[name=' + data['validateLinked'] + ']');
                 data.valid = tests.linked( data.val, linkedTo.val() );
             }
+
+            if( data.validateMaxWords ){
+              data.valid = tests.maxWords( data.val );
+            }
+
             /* validate by type of field. use 'attr()' is proffered to get the actual value and not what the browsers sees for unsupported types.
             */
             else if( data.valid || data.type == 'select' )
